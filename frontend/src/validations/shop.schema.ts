@@ -1,0 +1,10 @@
+import { z } from "zod";
+
+export const shopSchema = z.object({
+  shopName: z.string().min(1, "Shop name is required"),
+  address: z.string().min(1, "Address is required"),
+  gstNo: z.string().optional(),
+  fssaiNo: z.string().optional(),
+});
+
+export type ShopFormData = z.infer<typeof shopSchema>;
