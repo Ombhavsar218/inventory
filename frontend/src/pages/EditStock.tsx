@@ -19,7 +19,7 @@ const editStockSchema = z.object({
   price: z.coerce.number().min(0, "Price must be 0 or more"),
   minStock: z.coerce.number().int().min(0, "Min stock must be 0 or more").optional(),
   description: z.string().optional(),
-  shopId: z.coerce.number().int().positive("Shop is required"),
+  shopId: z.coerce.number().int().positive().optional(),
 });
 
 type EditStockFormData = z.output<typeof editStockSchema>;
@@ -233,13 +233,13 @@ export default function EditStock() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="shopId">Shop <span className="text-destructive">*</span></Label>
+                        <Label htmlFor="shopId">Shop</Label>
                         <select
                           id="shopId"
                           {...register("shopId")}
                           className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${errors.shopId ? "border-destructive" : ""}`}
                         >
-                          <option value="0">Select a shop</option>
+                          <option value="">Select a shop (optional)</option>
                           {shops.map((shop) => (
                             <option key={shop.id} value={shop.id}>{shop.name}</option>
                           ))}

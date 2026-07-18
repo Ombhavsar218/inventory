@@ -48,8 +48,8 @@ model Stock {
   price       Float
   minStock    Int      @default(0)
   description String?
-  shopId      Int
-  shop        Shop     @relation(fields: [shopId], references: [id])
+  shopId      Int?
+  shop        Shop?    @relation(fields: [shopId], references: [id])
   ownerId     Int
   owner       User     @relation(fields: [ownerId], references: [id])
   createdAt   DateTime @default(now())

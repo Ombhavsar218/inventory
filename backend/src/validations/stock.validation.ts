@@ -8,7 +8,7 @@ export const stockSchema = z.object({
   price: z.number().min(0, "Price must be 0 or more"),
   minStock: z.number().int().min(0, "Min stock must be 0 or more").optional(),
   description: z.string().optional(),
-  shopId: z.number().int().positive("Shop is required"),
+  shopId: z.number().int().positive().optional(),
 });
 
 export type StockInput = z.infer<typeof stockSchema>;
