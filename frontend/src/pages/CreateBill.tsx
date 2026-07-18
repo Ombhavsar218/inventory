@@ -42,6 +42,7 @@ export default function CreateBill() {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm<BillFormData>({
     resolver: zodResolver(createBillSchema) as any,
@@ -53,7 +54,7 @@ export default function CreateBill() {
   });
 
   const { fields, append, remove } = useFieldArray({
-    control: undefined as any,
+    control,
     name: "items",
   });
 
