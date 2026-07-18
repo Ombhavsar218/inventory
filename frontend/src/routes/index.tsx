@@ -8,7 +8,12 @@ import Dashboard from "@/pages/Dashboard";
 import Bills from "@/pages/Bills";
 import CreateBill from "@/pages/CreateBill";
 import ViewBill from "@/pages/ViewBill";
+import EditBill from "@/pages/EditBill";
+import ShopBills from "@/pages/ShopBills";
 import Purchase from "@/pages/Purchase";
+import AddPurchase from "@/pages/AddPurchase";
+import ViewPurchase from "@/pages/ViewPurchase";
+import EditPurchase from "@/pages/EditPurchase";
 import Stock from "@/pages/Stock";
 import AddStock from "@/pages/AddStock";
 import EditStock from "@/pages/EditStock";
@@ -18,6 +23,7 @@ import EditShop from "@/pages/EditShop";
 import AddShop from "@/pages/AddShop";
 import Profile from "@/pages/Profile";
 import SettingsPage from "@/pages/Settings";
+import BusinessProfile from "@/pages/BusinessProfile";
 
 function DefaultRedirect() {
   const { user } = useAuth();
@@ -48,7 +54,12 @@ export default function AppRouter() {
             <Route path="/bills" element={<Bills />} />
             <Route path="/bills/new" element={<CreateBill />} />
             <Route path="/bills/:id" element={<ViewBill />} />
+            <Route path="/bills/:id/edit" element={<EditBill />} />
+            <Route path="/bills/shop/:shopId" element={<ShopBills />} />
             <Route path="/purchase" element={<ProtectedRoute allowedRoles={["OWNER"]}><Purchase /></ProtectedRoute>} />
+            <Route path="/purchase/new" element={<ProtectedRoute allowedRoles={["OWNER"]}><AddPurchase /></ProtectedRoute>} />
+            <Route path="/purchase/:id" element={<ProtectedRoute allowedRoles={["OWNER"]}><ViewPurchase /></ProtectedRoute>} />
+            <Route path="/purchase/:id/edit" element={<ProtectedRoute allowedRoles={["OWNER"]}><EditPurchase /></ProtectedRoute>} />
             <Route path="/stock" element={<ProtectedRoute allowedRoles={["OWNER"]}><Stock /></ProtectedRoute>} />
             <Route path="/stock/new" element={<ProtectedRoute allowedRoles={["OWNER"]}><AddStock /></ProtectedRoute>} />
             <Route path="/stock/:id/edit" element={<ProtectedRoute allowedRoles={["OWNER"]}><EditStock /></ProtectedRoute>} />
@@ -57,6 +68,7 @@ export default function AppRouter() {
             <Route path="/shops/:id" element={<ProtectedRoute allowedRoles={["OWNER"]}><ShopDetails /></ProtectedRoute>} />
             <Route path="/shops/:id/edit" element={<ProtectedRoute allowedRoles={["OWNER"]}><EditShop /></ProtectedRoute>} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/business-profile" element={<ProtectedRoute allowedRoles={["OWNER"]}><BusinessProfile /></ProtectedRoute>} />
             <Route path="/profile" element={<Profile />} />
           </Route>
           <Route path="*" element={<DefaultRedirect />} />

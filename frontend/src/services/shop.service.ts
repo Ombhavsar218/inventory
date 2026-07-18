@@ -6,6 +6,9 @@ export interface Shop {
   address: string;
   gstNo: string | null;
   fssaiNo: string | null;
+  phone: string | null;
+  email: string | null;
+  stateCode: string | null;
   ownerId: number;
   owner: { id: number; fullName: string };
   createdAt: string;
@@ -22,7 +25,7 @@ export interface ShopResponse {
 }
 
 export const shopService = {
-  create: async (data: { name: string; address: string; gstNo?: string; fssaiNo?: string }): Promise<ShopResponse> => {
+  create: async (data: { name: string; address: string; gstNo?: string; fssaiNo?: string; phone?: string; email?: string; stateCode?: string }): Promise<ShopResponse> => {
     const response = await api.post<ShopResponse>("/shops", data);
     return response.data;
   },
@@ -37,7 +40,7 @@ export const shopService = {
     return response.data;
   },
 
-  update: async (id: number, data: { name: string; address: string; gstNo?: string; fssaiNo?: string }): Promise<ShopResponse> => {
+  update: async (id: number, data: { name: string; address: string; gstNo?: string; fssaiNo?: string; phone?: string; email?: string; stateCode?: string }): Promise<ShopResponse> => {
     const response = await api.put<ShopResponse>(`/shops/${id}`, data);
     return response.data;
   },

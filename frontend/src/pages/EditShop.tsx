@@ -39,6 +39,9 @@ export default function EditShop() {
         address: data.shop.address,
         gstNo: data.shop.gstNo || "",
         fssaiNo: data.shop.fssaiNo || "",
+        phone: data.shop.phone || "",
+        email: data.shop.email || "",
+        stateCode: data.shop.stateCode || "",
       });
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to load shop data.");
@@ -57,6 +60,9 @@ export default function EditShop() {
         address: data.address,
         gstNo: data.gstNo || undefined,
         fssaiNo: data.fssaiNo || undefined,
+        phone: data.phone || undefined,
+        email: data.email || undefined,
+        stateCode: data.stateCode || undefined,
       });
       navigate(`/shops/${id}`);
     } catch (err: any) {
@@ -163,6 +169,45 @@ export default function EditShop() {
                           id="fssaiNo"
                           placeholder="Enter FSSAI number"
                           {...register("fssaiNo")}
+                          className="h-10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                      Contact Details
+                      <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+                      <span className="h-px flex-1 bg-border" />
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone</Label>
+                        <Input
+                          id="phone"
+                          placeholder="Enter phone number"
+                          {...register("phone")}
+                          className="h-10"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          placeholder="Enter email address"
+                          {...register("email")}
+                          className="h-10"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="stateCode">State Code</Label>
+                        <Input
+                          id="stateCode"
+                          placeholder="Enter state code"
+                          {...register("stateCode")}
                           className="h-10"
                         />
                       </div>

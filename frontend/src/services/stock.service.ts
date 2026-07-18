@@ -7,6 +7,9 @@ export interface StockItem {
   quantity: number;
   unit: string;
   price: number;
+  mrp: number | null;
+  hsnCode: string | null;
+  gstRate: number | null;
   minStock: number;
   description: string | null;
   shopId: number | null;
@@ -32,6 +35,9 @@ export const stockService = {
     quantity: number;
     unit: string;
     price: number;
+    mrp?: number;
+    hsnCode?: string;
+    gstRate?: number;
     minStock?: number;
     description?: string;
     shopId?: number;
@@ -59,6 +65,9 @@ export const stockService = {
       quantity: number;
       unit: string;
       price: number;
+      mrp?: number;
+      hsnCode?: string;
+      gstRate?: number;
       minStock?: number;
       description?: string;
       shopId?: number;

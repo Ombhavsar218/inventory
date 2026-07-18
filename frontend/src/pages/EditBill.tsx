@@ -1,7 +1,7 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, Receipt, Plus, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,19 +19,21 @@ const billItemSchema = z.object({
   price: z.coerce.number().min(0),
 });
 
-const createBillSchema = z.object({
+const editBillSchema = z.object({
   shopId: z.coerce.number().int().positive("Shop is required"),
   date: z.string().min(1, "Date is required"),
   items: z.array(billItemSchema).min(1, "Add at least one item"),
 });
 
-type BillFormData = z.infer<typeof createBillSchema>;
+type BillFormData = z.infer<typeof editBillSchema>;
 
 const UNIT_OPTIONS = ["pcs", "kg", "liters", "boxes", "packets"];
 
-export default function CreateBill() {
+export default function EditBill() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [shops, setShops] = useState<Shop[]>([]);
   const [allStocks, setAllStocks] = useState<StockItem[]>([]);
@@ -43,11 +45,12 @@ export default function CreateBill() {
     setValue,
     control,
     formState: { errors },
+    reset,
   } = useForm<BillFormData>({
-    resolver: zodResolver(createBillSchema) as any,
+    resolver: zodResolver(editBillSchema) as any,
     defaultValues: {
       shopId: 0,
-      date: new Date().toISOString().split("T")[0],
+      date: "",
       items: [{ stockId: 0, quantity: 1, unit: "pcs", price: 0 }],
     },
   });
@@ -70,15 +73,31 @@ export default function CreateBill() {
       const shopData = await shopService.getAll();
       setShops(shopData.shops);
     } catch (err: any) {
-      console.error("Failed to fetch shops:", err);
       setError(err.response?.data?.message || "Failed to load shops");
     }
     try {
       const stockData = await stockService.getAll();
       setAllStocks(stockData.stocks);
     } catch (err: any) {
-      console.error("Failed to fetch items:", err);
       setError(err.response?.data?.message || "Failed to load items");
+    }
+    try {
+      const billData = await billService.getById(parseInt(id!));
+      const bill = billData.bill;
+      reset({
+        shopId: bill.shopId,
+        date: new Date(bill.date).toISOString().split("T")[0],
+        items: bill.items.map((item) => ({
+          stockId: item.stockId,
+          quantity: item.quantity,
+          unit: item.unit,
+          price: item.price,
+        })),
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load bill");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,7 +121,7 @@ export default function CreateBill() {
     setIsSubmitting(true);
     setError("");
     try {
-      const bill = await billService.create({
+      const bill = await billService.update(parseInt(id!), {
         shopId: data.shopId,
         date: data.date,
         items: data.items.map((item) => ({
@@ -114,11 +133,19 @@ export default function CreateBill() {
       });
       navigate(`/bills/${bill.bill.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create bill. Please try again.");
+      setError(err.response?.data?.message || "Failed to update bill. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -142,8 +169,8 @@ export default function CreateBill() {
                 <Receipt className="h-6 w-6 text-rose-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground">Create New Bill</h2>
-                <p className="text-sm text-muted-foreground">Create a bill for a shop.</p>
+                <h2 className="text-xl font-bold text-foreground">Edit Bill #{id}</h2>
+                <p className="text-sm text-muted-foreground">Update bill details.</p>
               </div>
             </div>
 
@@ -315,10 +342,10 @@ export default function CreateBill() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Creating...
+                      Updating...
                     </>
                   ) : (
-                    "Create Bill"
+                    "Update Bill"
                   )}
                 </Button>
               </div>

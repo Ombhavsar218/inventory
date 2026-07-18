@@ -1,39 +1,40 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2, Receipt, Plus, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Loader2, ShoppingCart, Plus, Trash2 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
-import { shopService, type Shop } from "@/services/shop.service";
 import { stockService, type StockItem } from "@/services/stock.service";
-import { billService } from "@/services/bill.service";
+import { purchaseService } from "@/services/purchase.service";
 import { z } from "zod";
 
-const billItemSchema = z.object({
+const purchaseItemSchema = z.object({
   stockId: z.coerce.number().int().positive("Select an item"),
   quantity: z.coerce.number().int().positive("Qty must be at least 1"),
   unit: z.string().min(1, "Unit is required"),
   price: z.coerce.number().min(0),
 });
 
-const createBillSchema = z.object({
-  shopId: z.coerce.number().int().positive("Shop is required"),
+const editPurchaseSchema = z.object({
   date: z.string().min(1, "Date is required"),
-  items: z.array(billItemSchema).min(1, "Add at least one item"),
+  invoiceNumber: z.string().optional(),
+  paidAmount: z.coerce.number().min(0).optional(),
+  items: z.array(purchaseItemSchema).min(1, "Add at least one item"),
 });
 
-type BillFormData = z.infer<typeof createBillSchema>;
+type PurchaseFormData = z.infer<typeof editPurchaseSchema>;
 
 const UNIT_OPTIONS = ["pcs", "kg", "liters", "boxes", "packets"];
 
-export default function CreateBill() {
+export default function EditPurchase() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [shops, setShops] = useState<Shop[]>([]);
   const [allStocks, setAllStocks] = useState<StockItem[]>([]);
 
   const {
@@ -43,23 +44,20 @@ export default function CreateBill() {
     setValue,
     control,
     formState: { errors },
-  } = useForm<BillFormData>({
-    resolver: zodResolver(createBillSchema) as any,
+    reset,
+  } = useForm<PurchaseFormData>({
+    resolver: zodResolver(editPurchaseSchema) as any,
     defaultValues: {
-      shopId: 0,
-      date: new Date().toISOString().split("T")[0],
+      date: "",
+      invoiceNumber: "",
+      paidAmount: 0,
       items: [{ stockId: 0, quantity: 1, unit: "pcs", price: 0 }],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "items",
-  });
-
+  const { fields, append, remove } = useFieldArray({ control, name: "items" });
   const watchItems = watch("items");
-
-  const availableStocks = allStocks.filter((s) => s.quantity > 0);
+  const watchPaidAmount = watch("paidAmount");
 
   useEffect(() => {
     fetchData();
@@ -67,18 +65,29 @@ export default function CreateBill() {
 
   const fetchData = async () => {
     try {
-      const shopData = await shopService.getAll();
-      setShops(shopData.shops);
-    } catch (err: any) {
-      console.error("Failed to fetch shops:", err);
-      setError(err.response?.data?.message || "Failed to load shops");
-    }
-    try {
       const stockData = await stockService.getAll();
       setAllStocks(stockData.stocks);
     } catch (err: any) {
-      console.error("Failed to fetch items:", err);
       setError(err.response?.data?.message || "Failed to load items");
+    }
+    try {
+      const poData = await purchaseService.getById(parseInt(id!));
+      const po = poData.purchase;
+      reset({
+        date: new Date(po.date).toISOString().split("T")[0],
+        invoiceNumber: po.invoiceNumber || "",
+        paidAmount: po.paidAmount,
+        items: po.items.map((item) => ({
+          stockId: item.stockId,
+          quantity: item.quantity,
+          unit: item.unit,
+          price: item.price,
+        })),
+      });
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load purchase order");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,13 +107,16 @@ export default function CreateBill() {
     }, 0);
   };
 
-  const onSubmit = async (data: BillFormData) => {
+  const dueAmount = calculateTotal() - (watchPaidAmount || 0);
+
+  const onSubmit = async (data: PurchaseFormData) => {
     setIsSubmitting(true);
     setError("");
     try {
-      const bill = await billService.create({
-        shopId: data.shopId,
+      const po = await purchaseService.update(parseInt(id!), {
         date: data.date,
+        invoiceNumber: data.invoiceNumber || undefined,
+        paidAmount: data.paidAmount || 0,
         items: data.items.map((item) => ({
           stockId: item.stockId,
           quantity: item.quantity,
@@ -112,25 +124,28 @@ export default function CreateBill() {
           price: item.price,
         })),
       });
-      navigate(`/bills/${bill.bill.id}`);
+      navigate(`/purchase/${po.purchase.id}`);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create bill. Please try again.");
+      setError(err.response?.data?.message || "Failed to update purchase order. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate("/bills")}
-          className="text-muted-foreground hover:text-foreground -ml-2"
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate("/purchase")} className="text-muted-foreground hover:text-foreground -ml-2">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Bills
+          Back to Purchase Orders
         </Button>
       </div>
 
@@ -138,12 +153,12 @@ export default function CreateBill() {
         <Card className="border-0 shadow-md">
           <CardContent className="p-0">
             <div className="flex items-center gap-4 p-6 pb-5 border-b border-border">
-              <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
-                <Receipt className="h-6 w-6 text-rose-600" />
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                <ShoppingCart className="h-6 w-6 text-emerald-600" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground">Create New Bill</h2>
-                <p className="text-sm text-muted-foreground">Create a bill for a shop.</p>
+                <h2 className="text-xl font-bold text-foreground">Edit Purchase Order #{id}</h2>
+                <p className="text-sm text-muted-foreground">Update purchase details. Stock will be adjusted accordingly.</p>
               </div>
             </div>
 
@@ -157,27 +172,10 @@ export default function CreateBill() {
 
                 <div>
                   <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                    Bill Details
+                    Purchase Details
                     <span className="h-px flex-1 bg-border" />
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="shopId">Shop <span className="text-destructive">*</span></Label>
-                      <select
-                        id="shopId"
-                        {...register("shopId", { valueAsNumber: true })}
-                        className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${errors.shopId ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                      >
-                        <option value={0}>Select a shop</option>
-                        {shops.map((shop) => (
-                          <option key={shop.id} value={shop.id}>
-                            {shop.name}
-                          </option>
-                        ))}
-                      </select>
-                      {errors.shopId && <p className="text-xs text-destructive">{errors.shopId.message}</p>}
-                    </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="date">Date <span className="text-destructive">*</span></Label>
                       <Input
@@ -187,6 +185,28 @@ export default function CreateBill() {
                         className={`h-10 ${errors.date ? "border-destructive focus-visible:ring-destructive" : ""}`}
                       />
                       {errors.date && <p className="text-xs text-destructive">{errors.date.message}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="invoiceNumber">Invoice Number</Label>
+                      <Input
+                        id="invoiceNumber"
+                        {...register("invoiceNumber")}
+                        placeholder="e.g. INV-001"
+                        className="h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="paidAmount">Paid Amount (₹)</Label>
+                      <Input
+                        id="paidAmount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        {...register("paidAmount", { valueAsNumber: true })}
+                        className="h-10"
+                      />
                     </div>
                   </div>
                 </div>
@@ -212,22 +232,15 @@ export default function CreateBill() {
                             className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
                           >
                             <option value={0}>Select item</option>
-                            {availableStocks.map((stock) => (
-                              <option key={stock.id} value={stock.id}>
-                                {stock.name} ({stock.quantity} {stock.unit} available)
-                              </option>
+                            {allStocks.map((stock) => (
+                              <option key={stock.id} value={stock.id}>{stock.name} ({stock.unit})</option>
                             ))}
                           </select>
                         </div>
 
                         <div className="sm:col-span-2 space-y-1">
                           <Label className="text-xs">Qty <span className="text-destructive">*</span></Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            {...register(`items.${index}.quantity`)}
-                            className="h-9"
-                          />
+                          <Input type="number" min="1" {...register(`items.${index}.quantity`)} className="h-9" />
                         </div>
 
                         <div className="sm:col-span-2 space-y-1">
@@ -244,13 +257,7 @@ export default function CreateBill() {
 
                         <div className="sm:col-span-2 space-y-1">
                           <Label className="text-xs">Price (₹)</Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            {...register(`items.${index}.price`)}
-                            className="h-9"
-                          />
+                          <Input type="number" min="0" step="0.01" {...register(`items.${index}.price`)} className="h-9" />
                         </div>
 
                         <div className="sm:col-span-1 space-y-1">
@@ -299,26 +306,36 @@ export default function CreateBill() {
                       <span className="text-muted-foreground">Items:</span>
                       <span>{watchItems?.length || 0}</span>
                     </div>
-                    <div className="flex justify-between text-lg font-bold border-t border-border pt-2">
-                      <span>Total:</span>
-                      <span>₹{calculateTotal().toFixed(2)}</span>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-muted-foreground">Total:</span>
+                      <span className="font-medium">₹{calculateTotal().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-muted-foreground">Paid:</span>
+                      <span className="text-emerald-600">₹{(watchPaidAmount || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t border-border pt-2">
+                      <span className="text-muted-foreground">Due:</span>
+                      <span className={`font-medium ${dueAmount > 0 ? "text-rose-600" : "text-emerald-600"}`}>
+                        ₹{dueAmount.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/30">
-                <Button type="button" variant="outline" onClick={() => navigate("/bills")}>
+                <Button type="button" variant="outline" onClick={() => navigate("/purchase")}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Creating...
+                      Updating...
                     </>
                   ) : (
-                    "Create Bill"
+                    "Update Purchase Order"
                   )}
                 </Button>
               </div>

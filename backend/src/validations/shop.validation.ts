@@ -5,6 +5,9 @@ export const shopSchema = z.object({
   address: z.string().min(1, "Address is required"),
   gstNo: z.string().optional(),
   fssaiNo: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  stateCode: z.string().optional(),
 });
 
 export type ShopInput = z.infer<typeof shopSchema>;

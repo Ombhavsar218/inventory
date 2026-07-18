@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, Receipt, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { billService, type Bill } from "@/services/bill.service";
+import PrintBill from "@/components/PrintBill";
 
 export default function ViewBill() {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function ViewBill() {
   const [bill, setBill] = useState<Bill | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showPrint, setShowPrint] = useState(false);
 
   useEffect(() => {
     if (id) fetchBill(parseInt(id));
@@ -47,6 +49,20 @@ export default function ViewBill() {
     );
   }
 
+  if (showPrint) {
+    return (
+      <div>
+        <div className="mb-4 no-print">
+          <Button variant="ghost" size="sm" onClick={() => setShowPrint(false)} className="text-muted-foreground hover:text-foreground -ml-2">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Bill
+          </Button>
+        </div>
+        <PrintBill billId={bill.id} onReady={() => {}} />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -59,7 +75,7 @@ export default function ViewBill() {
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back to Bills
         </Button>
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
+        <Button variant="outline" size="sm" onClick={() => setShowPrint(true)}>
           <Printer className="h-4 w-4 mr-1" />
           Print
         </Button>
@@ -72,7 +88,7 @@ export default function ViewBill() {
               <Receipt className="h-6 w-6 text-rose-600" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Bill #{bill.id}</h2>
+              <h2 className="text-xl font-bold text-foreground">Bill #{bill.invoiceNumber || bill.id}</h2>
               <p className="text-sm text-muted-foreground">
                 Created by {bill.creator.fullName} on {new Date(bill.createdAt).toLocaleDateString("en-IN")}
               </p>

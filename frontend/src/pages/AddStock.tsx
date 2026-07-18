@@ -20,6 +20,9 @@ const addStockSchema = z.object({
   minStock: z.coerce.number().int().min(0, "Min stock must be 0 or more").optional(),
   description: z.string().optional(),
   shopId: z.coerce.number().int().positive().optional(),
+  mrp: z.coerce.number().min(0).optional(),
+  hsnCode: z.string().optional(),
+  gstRate: z.coerce.number().min(0).max(100).optional(),
 });
 
 type AddStockFormData = z.output<typeof addStockSchema>;
@@ -47,6 +50,9 @@ export default function AddStock() {
       minStock: 0,
       description: "",
       shopId: undefined,
+      mrp: 0,
+      hsnCode: "",
+      gstRate: 0,
     },
   });
 
@@ -76,6 +82,9 @@ export default function AddStock() {
         minStock: data.minStock || 0,
         description: data.description || undefined,
         shopId: data.shopId || undefined,
+        mrp: data.mrp || undefined,
+        hsnCode: data.hsnCode || undefined,
+        gstRate: data.gstRate || undefined,
       });
       navigate("/stock");
     } catch (err: any) {
@@ -197,6 +206,49 @@ export default function AddStock() {
                         type="number"
                         min="0"
                         {...register("minStock")}
+                        className="h-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+                    GST & Tax Details
+                    <span className="h-px flex-1 bg-border" />
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="mrp">MRP (₹)</Label>
+                      <Input
+                        id="mrp"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        {...register("mrp")}
+                        className="h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="hsnCode">HSN Code</Label>
+                      <Input
+                        id="hsnCode"
+                        placeholder="e.g. 9401"
+                        {...register("hsnCode")}
+                        className="h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gstRate">GST Rate (%)</Label>
+                      <Input
+                        id="gstRate"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        {...register("gstRate")}
                         className="h-10"
                       />
                     </div>

@@ -13,4 +13,10 @@ export const createBillSchema = z.object({
   items: z.array(billItemSchema).min(1, "At least one item is required"),
 });
 
-export type CreateBillInput = z.infer<typeof createBillSchema>;
+export const updateBillSchema = z.object({
+  shopId: z.number().int().positive("Shop is required").optional(),
+  date: z.string().optional(),
+  items: z.array(billItemSchema).min(1, "At least one item is required").optional(),
+});
+
+export type UpdateBillInput = z.infer<typeof updateBillSchema>;

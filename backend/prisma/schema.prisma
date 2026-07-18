@@ -13,6 +13,11 @@ enum Role {
   API
 }
 
+enum PurchaseStatus {
+  PENDING
+  RECEIVED
+}
+
 model User {
   id         Int      @id @default(autoincrement())
   fullName   String
@@ -23,6 +28,7 @@ model User {
   shops      Shop[]
   stockItems Stock[]
   bills      Bill[]
+  purchaseOrders PurchaseOrder[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -33,6 +39,9 @@ model Shop {
   address    String
   gstNo      String?
   fssaiNo    String?
+  phone      String?
+  email      String?
+  stateCode  String?
   ownerId    Int
   owner      User     @relation(fields: [ownerId], references: [id])
   stockItems Stock[]
@@ -48,6 +57,9 @@ model Stock {
   quantity    Int
   unit        String     @default("pcs")
   price       Float
+  mrp         Float?
+  hsnCode     String?
+  gstRate     Float?
   minStock    Int        @default(0)
   description String?
   shopId      Int?
@@ -55,21 +67,23 @@ model Stock {
   ownerId     Int
   owner       User       @relation(fields: [ownerId], references: [id])
   billItems   BillItem[]
+  purchaseOrderItems PurchaseOrderItem[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
 
 model Bill {
-  id          Int        @id @default(autoincrement())
-  shopId      Int
-  shop        Shop       @relation(fields: [shopId], references: [id])
-  date        DateTime   @default(now())
-  totalAmount Float      @default(0)
-  createdBy   Int
-  creator     User       @relation(fields: [createdBy], references: [id])
-  items       BillItem[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id             Int        @id @default(autoincrement())
+  invoiceNumber  String?
+  shopId         Int
+  shop           Shop       @relation(fields: [shopId], references: [id])
+  date           DateTime   @default(now())
+  totalAmount    Float      @default(0)
+  createdBy      Int
+  creator        User       @relation(fields: [createdBy], references: [id])
+  items          BillItem[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 }
 
 model BillItem {
@@ -81,4 +95,49 @@ model BillItem {
   quantity Int
   unit     String
   price    Float
+}
+
+model BusinessProfile {
+  id             Int      @id @default(autoincrement())
+  name           String
+  address        String
+  phone          String?
+  email          String?
+  stateCode      String?
+  gstNo          String?
+  fssaiNo        String?
+  bankName       String?
+  bankAccountNo  String?
+  bankBranch     String?
+  bankIFSC       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PurchaseOrder {
+  id              Int             @id @default(autoincrement())
+  invoiceNumber   String?
+  date            DateTime        @default(now())
+  status          PurchaseStatus  @default(PENDING)
+  totalAmount     Float           @default(0)
+  paidAmount      Float           @default(0)
+  dueAmount       Float           @default(0)
+  createdBy       Int
+  creator         User            @relation(fields: [createdBy], references: [id])
+  items           PurchaseOrderItem[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model PurchaseOrderItem {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  stockId         Int
+  stock           Stock         @relation(fields: [stockId], references: [id])
+  quantity        Int
+  unit            String
+  price           Float
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }

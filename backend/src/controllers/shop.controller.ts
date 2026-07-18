@@ -14,7 +14,7 @@ export async function createShop(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const { name, address, gstNo, fssaiNo } = result.data;
+    const { name, address, gstNo, fssaiNo, phone, email, stateCode } = result.data;
     const userId = (req as any).userId;
 
     const shop = await prisma.shop.create({
@@ -23,6 +23,9 @@ export async function createShop(req: Request, res: Response): Promise<void> {
         address,
         gstNo: gstNo || null,
         fssaiNo: fssaiNo || null,
+        phone: phone || null,
+        email: email || null,
+        stateCode: stateCode || null,
         ownerId: userId,
       },
     });
@@ -40,7 +43,7 @@ export async function getShops(req: Request, res: Response): Promise<void> {
     const userRole = (req as any).userRole;
 
     const shops = await prisma.shop.findMany({
-      where: userRole === "OWNER" ? {} : { ownerId: userId },
+      where: {},
       include: { owner: { select: { id: true, fullName: true } } },
       orderBy: { createdAt: "desc" },
     });
@@ -99,7 +102,7 @@ export async function updateShop(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const { name, address, gstNo, fssaiNo } = result.data;
+    const { name, address, gstNo, fssaiNo, phone, email, stateCode } = result.data;
 
     const updated = await prisma.shop.update({
       where: { id: Number(id) },
@@ -108,6 +111,9 @@ export async function updateShop(req: Request, res: Response): Promise<void> {
         address,
         gstNo: gstNo || null,
         fssaiNo: fssaiNo || null,
+        phone: phone || null,
+        email: email || null,
+        stateCode: stateCode || null,
       },
     });
 

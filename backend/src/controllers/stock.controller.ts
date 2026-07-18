@@ -14,7 +14,7 @@ export async function createStock(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const { name, sku, quantity, unit, price, minStock, description, shopId } = result.data;
+    const { name, sku, quantity, unit, price, mrp, hsnCode, gstRate, minStock, description, shopId } = result.data;
     const userId = (req as any).userId;
 
     const shop = await prisma.shop.findUnique({ where: { id: shopId } });
@@ -30,6 +30,9 @@ export async function createStock(req: Request, res: Response): Promise<void> {
         quantity,
         unit,
         price,
+        mrp: mrp ?? null,
+        hsnCode: hsnCode || null,
+        gstRate: gstRate ?? null,
         minStock: minStock ?? 0,
         description: description || null,
         shopId,
@@ -51,7 +54,7 @@ export async function getStocks(req: Request, res: Response): Promise<void> {
     const userRole = (req as any).userRole;
     const { shopId } = req.query;
 
-    const where: any = userRole === "OWNER" ? {} : { ownerId: userId };
+    const where: any = {};
     if (shopId) {
       where.shopId = Number(shopId);
     }
@@ -112,7 +115,7 @@ export async function updateStock(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const { name, sku, quantity, unit, price, minStock, description, shopId } = result.data;
+    const { name, sku, quantity, unit, price, mrp, hsnCode, gstRate, minStock, description, shopId } = result.data;
 
     const stock = await prisma.stock.update({
       where: { id: Number(id) },
@@ -122,6 +125,9 @@ export async function updateStock(req: Request, res: Response): Promise<void> {
         quantity,
         unit,
         price,
+        mrp: mrp ?? null,
+        hsnCode: hsnCode || null,
+        gstRate: gstRate ?? null,
         minStock: minStock ?? 0,
         description: description || null,
         shopId,

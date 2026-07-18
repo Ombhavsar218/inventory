@@ -57,6 +57,28 @@ async function main() {
   } else {
     console.log("Marketing user already exists, skipping seed.");
   }
+
+  const existingProfile = await prisma.businessProfile.findFirst();
+  if (!existingProfile) {
+    await prisma.businessProfile.create({
+      data: {
+        name: "Your Company Name",
+        address: "Your Company Address",
+        phone: "",
+        email: "",
+        stateCode: "27",
+        gstNo: "",
+        fssaiNo: "",
+        bankName: "",
+        bankAccountNo: "",
+        bankBranch: "",
+        bankIFSC: "",
+      },
+    });
+    console.log("Default business profile created.");
+  } else {
+    console.log("Business profile already exists, skipping seed.");
+  }
 }
 
 main()
