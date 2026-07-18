@@ -8,7 +8,7 @@ const billItemSchema = z.object({
 });
 
 export const createBillSchema = z.object({
-  customerName: z.string().min(1, "Customer name is required"),
+  shopId: z.number().int().positive("Shop is required"),
   date: z.string().optional(),
   items: z.array(billItemSchema).min(1, "At least one item is required"),
 });

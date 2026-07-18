@@ -81,8 +81,8 @@ export default function ViewBill() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Customer</p>
-              <p className="text-sm font-medium">{bill.customerName}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Shop</p>
+              <p className="text-sm font-medium">{bill.shop.name}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Date</p>

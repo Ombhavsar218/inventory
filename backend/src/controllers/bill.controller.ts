@@ -15,7 +15,7 @@ export async function createBill(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    const { customerName, date, items } = result.data;
+    const { shopId, date, items } = result.data;
 
     const bill = await prisma.$transaction(async (tx) => {
       let totalAmount = 0;
@@ -33,7 +33,7 @@ export async function createBill(req: Request, res: Response): Promise<void> {
 
       const createdBill = await tx.bill.create({
         data: {
-          customerName,
+          shopId,
           date: date ? new Date(date) : new Date(),
           totalAmount,
           createdBy: userId,
@@ -46,7 +46,7 @@ export async function createBill(req: Request, res: Response): Promise<void> {
             })),
           },
         },
-        include: { items: { include: { stock: true } }, creator: { select: { id: true, fullName: true, role: true } } },
+        include: { items: { include: { stock: true } }, creator: { select: { id: true, fullName: true, role: true } }, shop: true },
       });
 
       for (const item of items) {
@@ -78,6 +78,7 @@ export async function getBills(req: Request, res: Response): Promise<void> {
       include: {
         items: { include: { stock: { select: { id: true, name: true, unit: true } } } },
         creator: { select: { id: true, fullName: true, role: true } },
+        shop: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -100,6 +101,7 @@ export async function getBillById(req: Request, res: Response): Promise<void> {
       include: {
         items: { include: { stock: { select: { id: true, name: true, sku: true, unit: true } } } },
         creator: { select: { id: true, fullName: true, role: true } },
+        shop: { select: { id: true, name: true } },
       },
     });
 

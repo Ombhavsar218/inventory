@@ -36,6 +36,7 @@ model Shop {
   ownerId    Int
   owner      User     @relation(fields: [ownerId], references: [id])
   stockItems Stock[]
+  bills      Bill[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -59,15 +60,16 @@ model Stock {
 }
 
 model Bill {
-  id           Int        @id @default(autoincrement())
-  customerName String
-  date         DateTime   @default(now())
-  totalAmount  Float      @default(0)
-  createdBy    Int
-  creator      User       @relation(fields: [createdBy], references: [id])
-  items        BillItem[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id          Int        @id @default(autoincrement())
+  shopId      Int
+  shop        Shop       @relation(fields: [shopId], references: [id])
+  date        DateTime   @default(now())
+  totalAmount Float      @default(0)
+  createdBy   Int
+  creator     User       @relation(fields: [createdBy], references: [id])
+  items       BillItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model BillItem {

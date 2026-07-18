@@ -20,7 +20,7 @@ const billItemSchema = z.object({
 });
 
 const createBillSchema = z.object({
-  customerName: z.string().min(1, "Customer name is required"),
+  shopId: z.coerce.number().int().positive("Shop is required"),
   date: z.string().min(1, "Date is required"),
   items: z.array(billItemSchema).min(1, "Add at least one item"),
 });
@@ -35,7 +35,6 @@ export default function CreateBill() {
   const [error, setError] = useState("");
   const [shops, setShops] = useState<Shop[]>([]);
   const [allStocks, setAllStocks] = useState<StockItem[]>([]);
-  const [filteredStocks, setFilteredStocks] = useState<StockItem[][]>([[]]);
 
   const {
     register,
@@ -47,32 +46,33 @@ export default function CreateBill() {
   } = useForm<BillFormData>({
     resolver: zodResolver(createBillSchema) as any,
     defaultValues: {
-      customerName: "",
+      shopId: 0,
       date: new Date().toISOString().split("T")[0],
       items: [{ stockId: 0, quantity: 1, unit: "pcs", price: 0 }],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "items",
   });
 
+  const watchShopId = watch("shopId");
   const watchItems = watch("items");
+
+  const filteredStocks = allStocks.filter(
+    (s) => s.shopId === watchShopId && s.quantity > 0
+  );
 
   useEffect(() => {
     fetchData();
   }, []);
 
   useEffect(() => {
-    const newFiltered = watchItems.map((item: any, idx: number) => {
-      if (item.stockId && item.stockId > 0) {
-        return allStocks.filter((s) => s.id !== item.stockId && s.shopId === allStocks.find((as) => as.id === item.stockId)?.shopId);
-      }
-      return [];
-    });
-    setFilteredStocks(newFiltered.length > 0 ? newFiltered : [allStocks]);
-  }, [watchItems, allStocks]);
+    if (watchShopId && watchShopId > 0) {
+      replace([{ stockId: 0, quantity: 1, unit: "pcs", price: 0 }]);
+    }
+  }, [watchShopId]);
 
   const fetchData = async () => {
     try {
@@ -82,7 +82,6 @@ export default function CreateBill() {
       ]);
       setShops(shopData.shops);
       setAllStocks(stockData.stocks);
-      setFilteredStocks([stockData.stocks]);
     } catch (err) {
       console.error("Failed to fetch data:", err);
     }
@@ -104,17 +103,12 @@ export default function CreateBill() {
     }, 0);
   };
 
-  const getItemsForShop = (currentIndex: number) => {
-    const currentStockId = watchItems?.[currentIndex]?.stockId;
-    return allStocks.filter((s) => s.quantity > 0);
-  };
-
   const onSubmit = async (data: BillFormData) => {
     setIsSubmitting(true);
     setError("");
     try {
       const bill = await billService.create({
-        customerName: data.customerName,
+        shopId: data.shopId,
         date: data.date,
         items: data.items.map((item) => ({
           stockId: item.stockId,
@@ -154,7 +148,7 @@ export default function CreateBill() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-foreground">Create New Bill</h2>
-                <p className="text-sm text-muted-foreground">Create a bill for a customer.</p>
+                <p className="text-sm text-muted-foreground">Create a bill for a shop.</p>
               </div>
             </div>
 
@@ -173,14 +167,20 @@ export default function CreateBill() {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="customerName">Customer Name <span className="text-destructive">*</span></Label>
-                      <Input
-                        id="customerName"
-                        placeholder="Enter customer name"
-                        {...register("customerName")}
-                        className={`h-10 ${errors.customerName ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                      />
-                      {errors.customerName && <p className="text-xs text-destructive">{errors.customerName.message}</p>}
+                      <Label htmlFor="shopId">Shop <span className="text-destructive">*</span></Label>
+                      <select
+                        id="shopId"
+                        {...register("shopId", { valueAsNumber: true })}
+                        className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ${errors.shopId ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                      >
+                        <option value={0}>Select a shop</option>
+                        {shops.map((shop) => (
+                          <option key={shop.id} value={shop.id}>
+                            {shop.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.shopId && <p className="text-xs text-destructive">{errors.shopId.message}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -202,107 +202,105 @@ export default function CreateBill() {
                     <span className="h-px flex-1 bg-border" />
                   </h3>
 
-                  <div className="space-y-3">
-                    {fields.map((field, index) => (
-                      <div key={field.id} className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 rounded-lg border border-border bg-muted/20">
-                        <div className="sm:col-span-4 space-y-1">
-                          <Label className="text-xs">Item <span className="text-destructive">*</span></Label>
-                          <select
-                            {...register(`items.${index}.stockId`)}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value);
-                              register(`items.${index}.stockId`).onChange(e);
-                              if (val > 0) handleStockChange(index, val);
-                            }}
-                            className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
-                          >
-                            <option value={0}>Select item</option>
-                            {allStocks.filter((s) => s.quantity > 0).map((stock) => (
-                              <option key={stock.id} value={stock.id}>
-                                {stock.name} ({stock.quantity} {stock.unit} available)
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                  {!watchShopId || watchShopId === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4">Select a shop first to see available items.</p>
+                  ) : (
+                    <>
+                      <div className="space-y-3">
+                        {fields.map((field, index) => (
+                          <div key={field.id} className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 rounded-lg border border-border bg-muted/20">
+                            <div className="sm:col-span-4 space-y-1">
+                              <Label className="text-xs">Item <span className="text-destructive">*</span></Label>
+                              <select
+                                {...register(`items.${index}.stockId`)}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value);
+                                  register(`items.${index}.stockId`).onChange(e);
+                                  if (val > 0) handleStockChange(index, val);
+                                }}
+                                className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
+                              >
+                                <option value={0}>Select item</option>
+                                {filteredStocks.map((stock) => (
+                                  <option key={stock.id} value={stock.id}>
+                                    {stock.name} ({stock.quantity} {stock.unit} available)
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
 
-                        <div className="sm:col-span-2 space-y-1">
-                          <Label className="text-xs">Qty <span className="text-destructive">*</span></Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            {...register(`items.${index}.quantity`)}
-                            className="h-9"
-                          />
-                        </div>
+                            <div className="sm:col-span-2 space-y-1">
+                              <Label className="text-xs">Qty <span className="text-destructive">*</span></Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                {...register(`items.${index}.quantity`)}
+                                className="h-9"
+                              />
+                            </div>
 
-                        <div className="sm:col-span-2 space-y-1">
-                          <Label className="text-xs">Unit</Label>
-                          <select
-                            {...register(`items.${index}.unit`)}
-                            className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
-                          >
-                            {UNIT_OPTIONS.map((u) => (
-                              <option key={u} value={u}>{u}</option>
-                            ))}
-                          </select>
-                        </div>
+                            <div className="sm:col-span-2 space-y-1">
+                              <Label className="text-xs">Unit</Label>
+                              <select
+                                {...register(`items.${index}.unit`)}
+                                className="flex h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
+                              >
+                                {UNIT_OPTIONS.map((u) => (
+                                  <option key={u} value={u}>{u}</option>
+                                ))}
+                              </select>
+                            </div>
 
-                        <div className="sm:col-span-2 space-y-1">
-                          <Label className="text-xs">Price (₹)</Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            {...register(`items.${index}.price`)}
-                            className="h-9"
-                          />
-                        </div>
+                            <div className="sm:col-span-2 space-y-1">
+                              <Label className="text-xs">Price (₹)</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                {...register(`items.${index}.price`)}
+                                className="h-9"
+                              />
+                            </div>
 
-                        <div className="sm:col-span-1 space-y-1">
-                          <Label className="text-xs">Subtotal</Label>
-                          <div className="h-9 flex items-center text-sm font-medium">
-                            ₹{((watchItems?.[index]?.price || 0) * (watchItems?.[index]?.quantity || 0)).toFixed(2)}
+                            <div className="sm:col-span-1 space-y-1">
+                              <Label className="text-xs">Subtotal</Label>
+                              <div className="h-9 flex items-center text-sm font-medium">
+                                ₹{((watchItems?.[index]?.price || 0) * (watchItems?.[index]?.quantity || 0)).toFixed(2)}
+                              </div>
+                            </div>
+
+                            <div className="sm:col-span-1 flex items-end">
+                              {fields.length > 1 && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => remove(index)}
+                                  className="text-destructive hover:text-destructive h-9"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-
-                        <div className="sm:col-span-1 flex items-end">
-                          {fields.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                remove(index);
-                                const newFiltered = [...filteredStocks];
-                                newFiltered.splice(index, 1);
-                                setFilteredStocks(newFiltered);
-                              }}
-                              className="text-destructive hover:text-destructive h-9"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      append({ stockId: 0, quantity: 1, unit: "pcs", price: 0 });
-                      setFilteredStocks([...filteredStocks, allStocks]);
-                    }}
-                    className="mt-3"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Item
-                  </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => append({ stockId: 0, quantity: 1, unit: "pcs", price: 0 })}
+                        className="mt-3"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Item
+                      </Button>
 
-                  {errors.items && (
-                    <p className="text-xs text-destructive mt-1">{typeof errors.items === 'object' && 'message' in errors.items ? (errors.items as any).message : ''}</p>
+                      {errors.items && (
+                        <p className="text-xs text-destructive mt-1">{typeof errors.items === 'object' && 'message' in errors.items ? (errors.items as any).message : ''}</p>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -324,7 +322,7 @@ export default function CreateBill() {
                 <Button type="button" variant="outline" onClick={() => navigate("/bills")}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting || !watchShopId || watchShopId === 0}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />

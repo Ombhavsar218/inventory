@@ -11,7 +11,8 @@ export interface BillItem {
 
 export interface Bill {
   id: number;
-  customerName: string;
+  shopId: number;
+  shop: { id: number; name: string };
   date: string;
   totalAmount: number;
   createdBy: number;
@@ -32,7 +33,7 @@ export interface BillResponse {
 
 export const billService = {
   create: async (data: {
-    customerName: string;
+    shopId: number;
     date?: string;
     items: { stockId: number; quantity: number; unit: string; price: number }[];
   }): Promise<BillResponse> => {

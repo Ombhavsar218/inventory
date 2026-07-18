@@ -42,7 +42,7 @@ export default function Bills() {
 
   const filteredBills = bills.filter(
     (bill) =>
-      bill.customerName.toLowerCase().includes(search.toLowerCase()) ||
+      bill.shop.name.toLowerCase().includes(search.toLowerCase()) ||
       bill.creator.fullName.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -65,7 +65,7 @@ export default function Bills() {
             <div className="relative max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by customer or creator..."
+                placeholder="Search by shop or creator..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 h-10"
@@ -95,7 +95,7 @@ export default function Bills() {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Customer</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Shop</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Items</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Created By</th>
@@ -106,7 +106,7 @@ export default function Bills() {
                   {filteredBills.map((bill) => (
                     <tr key={bill.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-3 text-sm">{new Date(bill.date).toLocaleDateString("en-IN")}</td>
-                      <td className="px-4 py-3 text-sm font-medium">{bill.customerName}</td>
+                      <td className="px-4 py-3 text-sm font-medium">{bill.shop.name}</td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">{bill.items.length} item(s)</td>
                       <td className="px-4 py-3 text-sm font-medium">₹{bill.totalAmount.toFixed(2)}</td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">{bill.creator.fullName}</td>
