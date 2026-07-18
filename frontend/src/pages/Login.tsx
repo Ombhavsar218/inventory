@@ -37,8 +37,12 @@ export default function Login() {
     try {
       await login(data.email, data.password, data.rememberMe);
       navigate("/dashboard");
-    } catch {
-      // Error is handled by auth context
+    } catch (err: any) {
+      alert(
+        `Error: ${err.message}\n` +
+        `Status: ${err.response?.status ?? "No response"}\n` +
+        `Data: ${JSON.stringify(err.response?.data ?? {})}`
+      );
     }
   };
 
