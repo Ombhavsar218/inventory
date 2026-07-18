@@ -9,8 +9,8 @@ export interface StockItem {
   price: number;
   minStock: number;
   description: string | null;
-  shopId: number;
-  shop: { id: number; name: string };
+  shopId: number | null;
+  shop: { id: number; name: string } | null;
   ownerId: number;
   createdAt: string;
 }
@@ -34,7 +34,7 @@ export const stockService = {
     price: number;
     minStock?: number;
     description?: string;
-    shopId: number;
+    shopId?: number;
   }): Promise<StockResponse> => {
     const response = await api.post<StockResponse>("/stocks", data);
     return response.data;
@@ -61,7 +61,7 @@ export const stockService = {
       price: number;
       minStock?: number;
       description?: string;
-      shopId: number;
+      shopId?: number;
     }
   ): Promise<StockResponse> => {
     const response = await api.put<StockResponse>(`/stocks/${id}`, data);

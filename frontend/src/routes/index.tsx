@@ -6,6 +6,8 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Bills from "@/pages/Bills";
+import CreateBill from "@/pages/CreateBill";
+import ViewBill from "@/pages/ViewBill";
 import Purchase from "@/pages/Purchase";
 import Stock from "@/pages/Stock";
 import AddStock from "@/pages/AddStock";
@@ -44,6 +46,8 @@ export default function AppRouter() {
           >
             <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["OWNER"]}><Dashboard /></ProtectedRoute>} />
             <Route path="/bills" element={<Bills />} />
+            <Route path="/bills/new" element={<CreateBill />} />
+            <Route path="/bills/:id" element={<ViewBill />} />
             <Route path="/purchase" element={<ProtectedRoute allowedRoles={["OWNER"]}><Purchase /></ProtectedRoute>} />
             <Route path="/stock" element={<ProtectedRoute allowedRoles={["OWNER"]}><Stock /></ProtectedRoute>} />
             <Route path="/stock/new" element={<ProtectedRoute allowedRoles={["OWNER"]}><AddStock /></ProtectedRoute>} />

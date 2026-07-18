@@ -22,6 +22,7 @@ model User {
   isActive   Boolean  @default(true)
   shops      Shop[]
   stockItems Stock[]
+  bills      Bill[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -40,18 +41,42 @@ model Shop {
 }
 
 model Stock {
-  id          Int      @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   name        String
   sku         String?
   quantity    Int
-  unit        String   @default("pcs")
+  unit        String     @default("pcs")
   price       Float
-  minStock    Int      @default(0)
+  minStock    Int        @default(0)
   description String?
   shopId      Int?
-  shop        Shop?    @relation(fields: [shopId], references: [id])
+  shop        Shop?      @relation(fields: [shopId], references: [id])
   ownerId     Int
-  owner       User     @relation(fields: [ownerId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  owner       User       @relation(fields: [ownerId], references: [id])
+  billItems   BillItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Bill {
+  id           Int        @id @default(autoincrement())
+  customerName String
+  date         DateTime   @default(now())
+  totalAmount  Float      @default(0)
+  createdBy    Int
+  creator      User       @relation(fields: [createdBy], references: [id])
+  items        BillItem[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model BillItem {
+  id       Int   @id @default(autoincrement())
+  billId   Int
+  bill     Bill  @relation(fields: [billId], references: [id], onDelete: Cascade)
+  stockId  Int
+  stock    Stock @relation(fields: [stockId], references: [id])
+  quantity Int
+  unit     String
+  price    Float
 }
