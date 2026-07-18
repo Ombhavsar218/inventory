@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
-import { Receipt, Plus, Eye, Trash2, Search, Loader2, Pencil, Store, ChevronDown, ChevronRight, Printer, ArrowLeft } from "lucide-react";
+import { Receipt, Plus, Eye, Trash2, Search, Loader2, Pencil, ChevronDown, ChevronRight, Printer, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

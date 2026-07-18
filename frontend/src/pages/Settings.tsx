@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Settings, Building2, ChevronRight } from "lucide-react";
+import { Building2, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function SettingsPage() {

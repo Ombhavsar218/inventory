@@ -145,9 +145,6 @@ export default function Dashboard() {
     },
   ];
 
-  const currentMonth = new Date().getFullYear() - new Date(selectedMonth.split("-").map(Number)[0]).getFullYear() === 0 &&
-    new Date().getMonth() + 1 === parseInt(selectedMonth.split("-")[1]);
-
   return (
     <div>
       <div className="mb-6">
@@ -246,7 +243,7 @@ export default function Dashboard() {
                       width={50}
                     />
                     <Tooltip
-                      formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, "Revenue"]}
+                      formatter={(value: any) => [`₹${Number(value).toLocaleString("en-IN")}`, "Revenue"]}
                       labelFormatter={(label) => `Day ${label}`}
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",

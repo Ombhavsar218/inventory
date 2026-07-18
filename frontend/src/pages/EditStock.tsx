@@ -59,7 +59,7 @@ export default function EditStock() {
             price: stockData.stock.price,
             minStock: stockData.stock.minStock,
             description: stockData.stock.description || "",
-            shopId: stockData.stock.shopId,
+            shopId: stockData.stock.shopId ?? undefined,
             mrp: stockData.stock.mrp || 0,
             hsnCode: stockData.stock.hsnCode || "",
             gstRate: stockData.stock.gstRate || 0,
