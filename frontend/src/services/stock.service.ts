@@ -12,8 +12,6 @@ export interface StockItem {
   gstRate: number | null;
   minStock: number;
   description: string | null;
-  shopId: number | null;
-  shop: { id: number; name: string } | null;
   ownerId: number;
   createdAt: string;
 }
@@ -40,15 +38,13 @@ export const stockService = {
     gstRate?: number;
     minStock?: number;
     description?: string;
-    shopId?: number;
   }): Promise<StockResponse> => {
     const response = await api.post<StockResponse>("/stocks", data);
     return response.data;
   },
 
-  getAll: async (shopId?: number): Promise<StockListResponse> => {
-    const params = shopId ? { shopId } : {};
-    const response = await api.get<StockListResponse>("/stocks", { params });
+  getAll: async (): Promise<StockListResponse> => {
+    const response = await api.get<StockListResponse>("/stocks");
     return response.data;
   },
 
@@ -70,7 +66,6 @@ export const stockService = {
       gstRate?: number;
       minStock?: number;
       description?: string;
-      shopId?: number;
     }
   ): Promise<StockResponse> => {
     const response = await api.put<StockResponse>(`/stocks/${id}`, data);

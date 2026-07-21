@@ -5,6 +5,7 @@ import { Bell, LogOut, Warehouse, HelpCircle, X, LayoutDashboard, Receipt, Shopp
 import { Button } from "@/components/ui/button";
 
 const roleLabels: Record<string, string> = {
+  SUPERADMIN: "Super Admin",
   OWNER: "Owner",
   MARKETING: "Marketing",
   API: "API User",
@@ -103,7 +104,7 @@ export default function TopNavbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showGuide, setShowGuide] = useState(false);
-  const isOwner = user?.role === "OWNER";
+  const isOwner = user?.role === "OWNER" || user?.role === "SUPERADMIN";
   const guideItems = isOwner ? ownerGuide : marketingGuide;
 
   const handleLogout = () => {

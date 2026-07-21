@@ -44,3 +44,27 @@
     font-family: "Inter", system-ui, -apple-system, sans-serif;
   }
 }
+
+/* Mockup color palette */
+:root {
+  --app-bg: #F3F4F6;
+  --app-card: #FFFFFF;
+  --app-border: #E7E9F3;
+  --app-indigo: #6C5CE7;
+  --app-indigo-dark: #5b4bd6;
+  --app-indigo-bg: #EEEBFD;
+  --app-green: #16A34A;
+  --app-green-bg: #E8F9EF;
+  --app-green-icon: #22C55E;
+  --app-blue-bg: #E9F1FF;
+  --app-blue-icon: #3B82F6;
+  --app-amber-bg: #FDF3E1;
+  --app-amber-icon: #F5A524;
+  --app-text-dark: #1F2233;
+  --app-text-mid: #6B7189;
+  --app-text-light: #9698AA;
+}
+
+body {
+  background-color: var(--app-bg);
+}

@@ -6,7 +6,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   error: string | null;
   clearError: () => void;
@@ -42,11 +42,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, [token, logout]);
 
-  const login = async (email: string, password: string, rememberMe = false) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await authService.login({ email, password, rememberMe });
+      const response = await authService.login({ email, password });
       if (response.success) {
         setToken(response.token);
         setUser(response.user);

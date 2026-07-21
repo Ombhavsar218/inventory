@@ -5,7 +5,7 @@ export interface User {
   id: number;
   fullName: string;
   email?: string;
-  role: "OWNER" | "MARKETING" | "API";
+  role: "SUPERADMIN" | "OWNER" | "MARKETING" | "API";
 }
 
 export interface LoginResponse {

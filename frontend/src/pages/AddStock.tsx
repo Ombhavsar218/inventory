@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { stockService } from "@/services/stock.service";
-import { shopService, type Shop } from "@/services/shop.service";
 import { z } from "zod";
 
 const addStockSchema = z.object({
@@ -19,7 +18,6 @@ const addStockSchema = z.object({
   price: z.coerce.number().min(0, "Price must be 0 or more"),
   minStock: z.coerce.number().int().min(0, "Min stock must be 0 or more").optional(),
   description: z.string().optional(),
-  shopId: z.coerce.number().int().positive().optional(),
   mrp: z.coerce.number().min(0).optional(),
   hsnCode: z.string().optional(),
   gstRate: z.coerce.number().min(0).max(100).optional(),
@@ -33,7 +31,6 @@ export default function AddStock() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [shops, setShops] = useState<Shop[]>([]);
 
   const {
     register,
@@ -49,25 +46,11 @@ export default function AddStock() {
       price: 0,
       minStock: 0,
       description: "",
-      shopId: undefined,
       mrp: 0,
       hsnCode: "",
       gstRate: 0,
     },
   });
-
-  useEffect(() => {
-    fetchShops();
-  }, []);
-
-  const fetchShops = async () => {
-    try {
-      const data = await shopService.getAll();
-      setShops(data.shops);
-    } catch (err) {
-      console.error("Failed to fetch shops:", err);
-    }
-  };
 
   const onSubmit = async (data: AddStockFormData) => {
     setIsSubmitting(true);
@@ -81,7 +64,6 @@ export default function AddStock() {
         price: data.price,
         minStock: data.minStock || 0,
         description: data.description || undefined,
-        shopId: data.shopId || undefined,
         mrp: data.mrp || undefined,
         hsnCode: data.hsnCode || undefined,
         gstRate: data.gstRate || undefined,
@@ -257,7 +239,7 @@ export default function AddStock() {
 
                 <div>
                   <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                    Pricing & Location
+                    Pricing
                     <span className="h-px flex-1 bg-border" />
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -272,21 +254,6 @@ export default function AddStock() {
                         className={`h-10 ${errors.price ? "border-destructive focus-visible:ring-destructive" : ""}`}
                       />
                       {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="shopId">Shop</Label>
-                      <select
-                        id="shopId"
-                        {...register("shopId")}
-                        className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${errors.shopId ? "border-destructive" : ""}`}
-                      >
-                        <option value="">Select a shop (optional)</option>
-                        {shops.map((shop) => (
-                          <option key={shop.id} value={shop.id}>{shop.name}</option>
-                        ))}
-                      </select>
-                      {errors.shopId && <p className="text-xs text-destructive">{errors.shopId.message}</p>}
                     </div>
                   </div>
                 </div>

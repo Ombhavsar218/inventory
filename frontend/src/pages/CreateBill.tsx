@@ -102,7 +102,7 @@ export default function CreateBill() {
     setIsSubmitting(true);
     setError("");
     try {
-      const bill = await billService.create({
+      await billService.create({
         shopId: data.shopId,
         date: data.date,
         items: data.items.map((item) => ({
@@ -112,7 +112,7 @@ export default function CreateBill() {
           price: item.price,
         })),
       });
-      navigate(`/bills/${bill.bill.id}`);
+      navigate("/bills");
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create bill. Please try again.");
     } finally {

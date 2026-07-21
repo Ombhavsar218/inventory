@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { stockService } from "@/services/stock.service";
-import { shopService, type Shop } from "@/services/shop.service";
 import { z } from "zod";
 
 const editStockSchema = z.object({
@@ -19,7 +18,6 @@ const editStockSchema = z.object({
   price: z.coerce.number().min(0, "Price must be 0 or more"),
   minStock: z.coerce.number().int().min(0, "Min stock must be 0 or more").optional(),
   description: z.string().optional(),
-  shopId: z.coerce.number().int().positive().optional(),
   mrp: z.coerce.number().min(0).optional(),
   hsnCode: z.string().optional(),
   gstRate: z.coerce.number().min(0).max(100).optional(),
@@ -35,7 +33,6 @@ export default function EditStock() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [shops, setShops] = useState<Shop[]>([]);
 
   const {
     register,
@@ -47,10 +44,9 @@ export default function EditStock() {
   });
 
   useEffect(() => {
-    Promise.all([id ? stockService.getById(Number(id)) : null, shopService.getAll()]).then(
-      ([stockData, shopData]) => {
-        setShops(shopData.shops);
-        if (stockData) {
+    if (!id) return;
+    stockService.getById(Number(id)).then(
+      (stockData) => {
           reset({
             name: stockData.stock.name,
             sku: stockData.stock.sku || "",
@@ -59,12 +55,10 @@ export default function EditStock() {
             price: stockData.stock.price,
             minStock: stockData.stock.minStock,
             description: stockData.stock.description || "",
-            shopId: stockData.stock.shopId ?? undefined,
             mrp: stockData.stock.mrp || 0,
             hsnCode: stockData.stock.hsnCode || "",
             gstRate: stockData.stock.gstRate || 0,
           });
-        }
       }
     ).catch((err: any) => {
       setError(err.response?.data?.message || "Failed to load data.");
@@ -86,7 +80,6 @@ export default function EditStock() {
         price: data.price,
         minStock: data.minStock || 0,
         description: data.description || undefined,
-        shopId: data.shopId,
         mrp: data.mrp || undefined,
         hsnCode: data.hsnCode || undefined,
         gstRate: data.gstRate || undefined,
@@ -267,7 +260,7 @@ export default function EditStock() {
 
                 <div>
                   <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                    Pricing & Location
+                    Pricing
                       <span className="h-px flex-1 bg-border" />
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -283,23 +276,8 @@ export default function EditStock() {
                         />
                         {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
                       </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="shopId">Shop</Label>
-                        <select
-                          id="shopId"
-                          {...register("shopId")}
-                          className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${errors.shopId ? "border-destructive" : ""}`}
-                        >
-                          <option value="">Select a shop (optional)</option>
-                          {shops.map((shop) => (
-                            <option key={shop.id} value={shop.id}>{shop.name}</option>
-                          ))}
-                        </select>
-                        {errors.shopId && <p className="text-xs text-destructive">{errors.shopId.message}</p>}
-                      </div>
                     </div>
-                  </div>
+                </div>
                 </div>
 
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/30">

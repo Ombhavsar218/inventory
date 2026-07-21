@@ -7,15 +7,17 @@ import {
   Package,
   Store,
   Settings,
+  Users,
 } from "lucide-react";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["OWNER"] },
-  { to: "/bills", label: "Bills", icon: Receipt, roles: ["OWNER", "MARKETING"] },
-  { to: "/purchase", label: "Purchase", icon: ShoppingCart, roles: ["OWNER"] },
-  { to: "/stock", label: "Stock", icon: Package, roles: ["OWNER"] },
-  { to: "/shops", label: "Shops", icon: Store, roles: ["OWNER"] },
-  { to: "/settings", label: "Settings", icon: Settings, roles: ["OWNER", "MARKETING"] },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["OWNER", "SUPERADMIN"] },
+  { to: "/bills", label: "Bills", icon: Receipt, roles: ["OWNER", "SUPERADMIN", "MARKETING"] },
+  { to: "/purchase", label: "Purchase", icon: ShoppingCart, roles: ["OWNER", "SUPERADMIN"] },
+  { to: "/stock", label: "Stock", icon: Package, roles: ["OWNER", "SUPERADMIN"] },
+  { to: "/shops", label: "Shops", icon: Store, roles: ["OWNER", "SUPERADMIN"] },
+  { to: "/users", label: "Users", icon: Users, roles: ["SUPERADMIN"] },
+  { to: "/settings", label: "Settings", icon: Settings, roles: ["OWNER", "SUPERADMIN", "MARKETING"] },
 ];
 
 export default function BottomNav() {

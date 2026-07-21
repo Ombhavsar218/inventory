@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, Building2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { businessProfileService, type BusinessProfile } from "@/services/businessProfile.service";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { businessProfileService } from "@/services/businessProfile.service";
 
 export default function BusinessProfile() {
   const navigate = useNavigate();
@@ -76,131 +72,119 @@ export default function BusinessProfile() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--app-text-light)" }} />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate("/settings")}
-          className="text-muted-foreground hover:text-foreground -ml-2"
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
+      <div className="mb-7">
+        <button onClick={() => navigate("/settings")} className="flex items-center gap-1.5 text-[13px] font-medium cursor-pointer mb-5 transition-colors" style={{ color: "var(--app-text-light)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--app-text-dark)")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--app-text-light)")}>
+          <ArrowLeft className="h-3.5 w-3.5" />
           Back to Settings
-        </Button>
+        </button>
+        <h2 className="text-[26px] font-extrabold" style={{ color: "var(--app-text-dark)" }}>Business Profile</h2>
+        <p className="text-[13.5px] mt-0.5" style={{ color: "var(--app-text-light)" }}>Configure your company details for GST invoices.</p>
       </div>
 
-      <div className="w-full">
-        <Card className="border-0 shadow-md">
-          <CardContent className="p-0">
-            <div className="flex items-center gap-4 p-6 pb-5 border-b border-border">
-              <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-                <Building2 className="h-6 w-6 text-violet-600" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-foreground">Business Profile</h2>
-                <p className="text-sm text-muted-foreground">Configure your company details for GST invoices.</p>
+      <form onSubmit={onSubmit}>
+        <div className="rounded-[16px] overflow-hidden" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)" }}>
+          <div className="p-6">
+            {error && (
+              <div className="p-3 rounded-[10px] text-[13px] mb-4" style={{ background: "#FEE2E2", color: "#DC2626", border: "1px solid #FECACA" }}>{error}</div>
+            )}
+            {success && (
+              <div className="p-3 rounded-[10px] text-[13px] mb-4" style={{ background: "#E8F9EF", color: "#16A34A", border: "1px solid #BBF7D0" }}>{success}</div>
+            )}
+
+            <div className="mb-6">
+              <h3 className="text-[13px] font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--app-text-dark)" }}>
+                Company Information
+                <span className="h-px flex-1" style={{ background: "var(--app-border)" }} />
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>Company Name <span style={{ color: "#EF4444" }}>*</span></label>
+                  <input value={form.name} onChange={(e) => handleChange("name", e.target.value)} required className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>State Code</label>
+                  <input value={form.stateCode} onChange={(e) => handleChange("stateCode", e.target.value)} placeholder="e.g. 27" className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>Address <span style={{ color: "#EF4444" }}>*</span></label>
+                  <input value={form.address} onChange={(e) => handleChange("address", e.target.value)} required className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>Phone</label>
+                  <input value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>Email</label>
+                  <input value={form.email} onChange={(e) => handleChange("email", e.target.value)} type="email" className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
               </div>
             </div>
 
-            <form onSubmit={onSubmit}>
-              <div className="p-6 space-y-6">
-                {error && (
-                  <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive">{error}</div>
-                )}
-                {success && (
-                  <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-700">{success}</div>
-                )}
-
+            <div className="mb-6">
+              <h3 className="text-[13px] font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--app-text-dark)" }}>
+                Regulatory Details
+                <span className="h-px flex-1" style={{ background: "var(--app-border)" }} />
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                    Company Information
-                    <span className="h-px flex-1 bg-border" />
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Company Name <span className="text-destructive">*</span></Label>
-                      <Input value={form.name} onChange={(e) => handleChange("name", e.target.value)} className="h-10" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>State Code</Label>
-                      <Input value={form.stateCode} onChange={(e) => handleChange("stateCode", e.target.value)} placeholder="e.g. 27" className="h-10" />
-                    </div>
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label>Address <span className="text-destructive">*</span></Label>
-                      <Input value={form.address} onChange={(e) => handleChange("address", e.target.value)} className="h-10" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Phone</Label>
-                      <Input value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} className="h-10" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Email</Label>
-                      <Input value={form.email} onChange={(e) => handleChange("email", e.target.value)} type="email" className="h-10" />
-                    </div>
-                  </div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>GSTIN Number</label>
+                  <input value={form.gstNo} onChange={(e) => handleChange("gstNo", e.target.value)} className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
                 </div>
-
                 <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                    Regulatory Details
-                    <span className="h-px flex-1 bg-border" />
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>GSTIN Number</Label>
-                      <Input value={form.gstNo} onChange={(e) => handleChange("gstNo", e.target.value)} className="h-10" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>FSSAI Number</Label>
-                      <Input value={form.fssaiNo} onChange={(e) => handleChange("fssaiNo", e.target.value)} className="h-10" />
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-                    Bank Details
-                    <span className="text-xs font-normal text-muted-foreground">(optional)</span>
-                    <span className="h-px flex-1 bg-border" />
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Bank Name</Label>
-                      <Input value={form.bankName} onChange={(e) => handleChange("bankName", e.target.value)} className="h-10" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Account Number</Label>
-                      <Input value={form.bankAccountNo} onChange={(e) => handleChange("bankAccountNo", e.target.value)} className="h-10" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Branch</Label>
-                      <Input value={form.bankBranch} onChange={(e) => handleChange("bankBranch", e.target.value)} className="h-10" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>IFSC Code</Label>
-                      <Input value={form.bankIFSC} onChange={(e) => handleChange("bankIFSC", e.target.value)} className="h-10" />
-                    </div>
-                  </div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>FSSAI Number</label>
+                  <input value={form.fssaiNo} onChange={(e) => handleChange("fssaiNo", e.target.value)} className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted/30">
-                <Button type="button" variant="outline" onClick={() => navigate("/settings")}>Cancel</Button>
-                <Button type="submit" disabled={saving}>
-                  {saving ? (<><Loader2 className="h-4 w-4 animate-spin mr-2" />Saving...</>) : ("Save Profile")}
-                </Button>
+            <div>
+              <h3 className="text-[13px] font-semibold mb-4 flex items-center gap-2" style={{ color: "var(--app-text-dark)" }}>
+                Bank Details
+                <span className="text-[12px] font-normal" style={{ color: "var(--app-text-light)" }}>(optional)</span>
+                <span className="h-px flex-1" style={{ background: "var(--app-border)" }} />
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>Bank Name</label>
+                  <input value={form.bankName} onChange={(e) => handleChange("bankName", e.target.value)} className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>Account Number</label>
+                  <input value={form.bankAccountNo} onChange={(e) => handleChange("bankAccountNo", e.target.value)} className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>Branch</label>
+                  <input value={form.bankBranch} onChange={(e) => handleChange("bankBranch", e.target.value)} className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
+                <div>
+                  <label className="text-[12px] font-medium mb-1.5 block" style={{ color: "var(--app-text-mid)" }}>IFSC Code</label>
+                  <input value={form.bankIFSC} onChange={(e) => handleChange("bankIFSC", e.target.value)} className="w-full rounded-[10px] px-4 py-3 text-[13px] outline-none" style={{ background: "var(--app-card)", border: "1px solid var(--app-border)", color: "var(--app-text-dark)" }} />
+                </div>
               </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ borderTop: "1px solid var(--app-border)" }}>
+            <button type="button" onClick={() => navigate("/settings")} className="px-5 py-2.5 rounded-[10px] text-[13px] font-semibold cursor-pointer transition-colors" style={{ border: "1px solid var(--app-border)", background: "var(--app-card)", color: "var(--app-text-dark)" }}>
+              Cancel
+            </button>
+            <button type="submit" disabled={saving} className="flex items-center gap-2 px-5 py-2.5 rounded-[10px] text-[13px] font-semibold text-white cursor-pointer transition-colors" style={{ background: "var(--app-indigo)" }}>
+              {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {saving ? "Saving..." : "Save Profile"}
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }

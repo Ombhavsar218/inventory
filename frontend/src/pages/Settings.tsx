@@ -1,48 +1,71 @@
 import { useNavigate } from "react-router-dom";
-import { Building2, ChevronRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Building2, User, Info, Database } from "lucide-react";
+
+const settingsCards = [
+  {
+    title: "Business Profile",
+    description: "Company details, GSTIN, FSSAI, and bank info for invoices.",
+    icon: Building2,
+    path: "/settings/business-profile",
+  },
+  {
+    title: "My Profile",
+    description: "View your account details and role.",
+    icon: User,
+    path: "/profile",
+  },
+  {
+    title: "About",
+    description: "App version and information.",
+    icon: Info,
+    path: "/settings/about",
+  },
+  {
+    title: "Data Management",
+    description: "Export and manage your inventory data.",
+    icon: Database,
+    path: "/settings/data-management",
+  },
+];
 
 export default function SettingsPage() {
   const navigate = useNavigate();
 
-  const settingsItems = [
-    {
-      title: "Business Profile",
-      description: "Configure company details, GSTIN, FSSAI, and bank details for invoices.",
-      icon: Building2,
-      color: "text-violet-600",
-      bg: "bg-violet-50",
-      path: "/settings/business-profile",
-    },
-  ];
-
   return (
     <div>
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-foreground">Settings</h2>
-        <p className="text-muted-foreground mt-1">Configure your system preferences.</p>
+      <div className="flex items-center justify-between mb-7">
+        <div className="flex items-center gap-4">
+          <div>
+            <h2 className="text-[26px] font-extrabold" style={{ color: "var(--app-text-dark)" }}>Settings</h2>
+            <p className="text-[13.5px] mt-0.5" style={{ color: "var(--app-text-light)" }}>
+              Configure your system preferences.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {settingsItems.map((item) => {
-          const Icon = item.icon;
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {settingsCards.map((card) => {
+          const Icon = card.icon;
           return (
-            <Card
-              key={item.title}
-              className="border-0 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer"
-              onClick={() => navigate(item.path)}
+            <button
+              key={card.title}
+              onClick={() => navigate(card.path)}
+              className="rounded-[16px] p-5 text-left cursor-pointer transition-all duration-200 hover:shadow-md group"
+              style={{ background: "var(--app-card)", border: "1px solid var(--app-border)" }}
             >
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-lg ${item.bg} flex items-center justify-center shrink-0`}>
-                  <Icon className={`h-5 w-5 ${item.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-              </CardContent>
-            </Card>
+              <div className="w-10 h-10 rounded-[10px] flex items-center justify-center mb-4" style={{ background: "#F4F4F7", color: "#6B7280" }}>
+                <Icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-[14px] font-bold mb-1" style={{ color: "var(--app-text-dark)" }}>{card.title}</h3>
+              <p className="text-[12px] leading-relaxed mb-4" style={{ color: "var(--app-text-light)" }}>{card.description}</p>
+              <span className="text-[12px] font-semibold inline-flex items-center gap-1 transition-colors" style={{ color: "var(--app-indigo)" }}>
+                Open
+                <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </button>
           );
         })}
       </div>
